@@ -538,10 +538,12 @@ class FlashAttentionImpl(AttentionImpl):
 
             cu_seqlens_k = attn_metadata.seq_start_loc if \
                 current_platform.is_xpu() else None
+            print(key_cache.shape)
+            print(value_cache.shape)
             flash_attn_varlen_func(
                 q=query[:num_actual_tokens],
-                k=key_cache,
-                v=value_cache,
+                k=key_cache.contiguous(),
+                v=value_cache.contiguous(),
                 out=output[:num_actual_tokens],
                 cu_seqlens_q=cu_seqlens_q,
                 max_seqlen_q=max_seqlen_q,

@@ -23,6 +23,7 @@ from vllm.model_executor.layers.quantization.fp8 import (Fp8Config,
 from vllm.model_executor.layers.quantization.gptq import GPTQLinearMethod
 from vllm.model_executor.utils import set_weight_attrs
 from vllm.platforms import current_platform
+import vllm.envs as envs
 
 MIN_IPEX_VERSION = "2.6.0"
 
@@ -288,6 +289,7 @@ class XPUFp8LinearMethod(Fp8LinearMethod):
               bias: Optional[torch.Tensor] = None) -> torch.Tensor:
         weight = layer.weight.data
         weight_scale = layer.weight_scale.data
+        x = x.to(torch.float16)
         output = torch.ops.torch_ipex.fp8_gemm_w8a16(x, weight, True,
                                                      weight_scale, bias)
         return output
@@ -313,7 +315,9 @@ class XPUFp8MoEMethod(FusedMoEMethodBase):
             num_experts,
             2 * intermediate_size_per_partition,
             hidden_size,
-            dtype=params_dtype),
+            dtype=params_dtype,
+            device="cpu" if envs.VLLM_OFFLOAD_WEIGHTS_BEFORE_QUANT else None
+            ),
                                         requires_grad=False)
         layer.register_parameter("w13_weight", w13_weight)
         set_weight_attrs(w13_weight, extra_weight_attrs)
@@ -322,7 +326,9 @@ class XPUFp8MoEMethod(FusedMoEMethodBase):
             num_experts,
             hidden_size,
             intermediate_size_per_partition,
-            dtype=params_dtype),
+            dtype=params_dtype,
+            device="cpu" if envs.VLLM_OFFLOAD_WEIGHTS_BEFORE_QUANT else None
+            ),
                                        requires_grad=False)
         layer.register_parameter("w2_weight", w2_weight)
         set_weight_attrs(w2_weight, extra_weight_attrs)

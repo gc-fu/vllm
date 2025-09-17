@@ -759,6 +759,7 @@ def is_kv_cache_type_uniform(kv_cache_spec: dict[str, KVCacheSpec]) -> bool:
 
     try:
         kv_cache_spec_values = list(kv_cache_spec.values())
+        print(kv_cache_spec_values)
         _ = kv_cache_spec_values[0].merge(kv_cache_spec_values)
     except AssertionError:
         return False
@@ -1107,7 +1108,10 @@ def get_kv_cache_config(
     Returns:
         The generated KVCacheConfigs
     """
+    # raise ValueError("...")
     check_enough_kv_cache_memory(vllm_config, kv_cache_spec, available_memory)
+    # TODO(gc): decides why this is True?
+    print(f"Reset the disable_hybrid_kv_cache_manager to: {vllm_config.scheduler_config.disable_hybrid_kv_cache_manager}")
     if vllm_config.scheduler_config.disable_hybrid_kv_cache_manager:
         unify_hybrid_kv_cache_specs(kv_cache_spec)
 

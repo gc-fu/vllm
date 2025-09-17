@@ -157,8 +157,14 @@ class Qwen3NextSparseMoeBlock(nn.Module):
         # NOTE: hidden_states can have either 1D or 2D shape.
         orig_shape = hidden_states.shape
         hidden_dim = hidden_states.shape[-1]
+        # TODO(gc): determine why this may be torch.float16...
         hidden_states = hidden_states.view(-1, hidden_dim)
 
+        # print("========================== Debug Begins =================================")
+        # print(f"shared_expert_gate.weight: {self.shared_expert_gate.weight.dtype}")
+        # print(f"hidden_states.weight: {hidden_states.dtype}")
+        # print("========================== Debug ends ===================================")
+        hidden_states = hidden_states.to(torch.float16)
         shared_output = None
         if self.shared_expert is not None:
             shared_output = self.shared_expert(hidden_states)
@@ -297,7 +303,8 @@ class Qwen3NextGatedDeltaNet(nn.Module, MambaBase):
             eps=self.layer_norm_epsilon,
             group_size=None,
             norm_before_gate=True,
-            device=torch.cuda.current_device(),
+            # device=torch.cuda.current_device(),
+            device=torch.xpu.current_device(),
             dtype=config.torch_dtype,
         )
 
@@ -1027,6 +1034,8 @@ class Qwen3NextModel(nn.Module):
                     if ((name.endswith(".bias") or name.endswith("_bias"))
                             and name not in params_dict):
                         continue
+                    if name not in params_dict:
+                        continue
                     param = params_dict[name]
                     weight_loader = param.weight_loader
                     weight_loader(param,
@@ -1040,6 +1049,8 @@ class Qwen3NextModel(nn.Module):
                     if name.endswith(".bias") and name not in params_dict:
                         continue
                     if is_pp_missing_parameter(name, self):
+                        continue
+                    if name not in params_dict:
                         continue
                     param = params_dict[name]
                     weight_loader = getattr(param, "weight_loader",

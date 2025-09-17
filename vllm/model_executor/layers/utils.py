@@ -89,6 +89,8 @@ def default_unquantized_gemm(layer: torch.nn.Module,
                              x: torch.Tensor,
                              weight: torch.Tensor,
                              bias: Optional[torch.Tensor] = None):
+    # TODO(gc): here we encounter this...
+    x = x.to(torch.float16)
     return torch.nn.functional.linear(x, weight, bias)
 
 

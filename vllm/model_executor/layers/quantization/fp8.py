@@ -312,6 +312,7 @@ class Fp8LinearMethod(LinearMethodBase):
         # Force offloading weights to cpu if VLLM_OFFLOAD_WEIGHTS_BEFORE_QUANT
         # enabled, otherwise use original device config which can be gpu or cpu
         # (may happen when cpu_offload_gb > 0)
+        # print("We are creating weights on CPU device...!!!!")
         weight = ModelWeightParameter(data=torch.empty(
             output_size_per_partition,
             input_size_per_partition,
@@ -631,6 +632,7 @@ class Fp8MoEMethod(FusedMoEMethodBase):
                     f"weight quantization block_k = {block_k}.")
 
         # WEIGHTS
+        print("We are here... with fp8 moe method")
         w13_weight = torch.nn.Parameter(torch.empty(
             num_experts,
             2 * intermediate_size_per_partition,
