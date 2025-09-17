@@ -55,7 +55,8 @@ class FlashAttentionBackend(AttentionBackend):
 
     @staticmethod
     def get_supported_block_size() -> list[Union[int, MultipleOf]]:
-        return [MultipleOf(16)]
+        # return [MultipleOf(16)]
+        return [16, 64]
 
     @classmethod
     def validate_head_size(cls, head_size: int) -> None:
@@ -543,8 +544,6 @@ class FlashAttentionImpl(AttentionImpl):
 
             cu_seqlens_k = attn_metadata.seq_start_loc if \
                 current_platform.is_xpu() else None
-            print(key_cache.shape)
-            print(value_cache.shape)
             flash_attn_varlen_func(
                 q=query[:num_actual_tokens],
                 k=key_cache.contiguous(),
