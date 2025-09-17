@@ -30,6 +30,15 @@ logger = init_logger(__name__)
 USE_XFORMERS_OPS = None
 
 
+
+def check_upstream_fa_availability(dtype: torch.dtype):
+    if dtype in (torch.float16, torch.bfloat16) and current_platform.is_cuda(
+    ) and current_platform.has_device_capability(80):
+        from transformers.utils import is_flash_attn_2_available
+        return is_flash_attn_2_available()
+    return False
+
+
 def check_xformers_availability():
     global USE_XFORMERS_OPS
     if USE_XFORMERS_OPS is not None:
