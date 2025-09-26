@@ -103,7 +103,8 @@ class XPUWorker(Worker):
         # Calculate the number of blocks that can be allocated with the
         # profiled peak memory.
         torch.xpu.synchronize()
-        used_memory = torch.xpu.memory_allocated()
+        # used_memory = torch.xpu.memory_allocated()
+        used_memory = torch.xpu.memory_reserved()
         total_gpu_memory = torch.xpu.get_device_properties(
             self.local_rank).total_memory
         free_gpu_memory = total_gpu_memory - used_memory
