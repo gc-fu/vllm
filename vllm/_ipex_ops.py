@@ -207,6 +207,12 @@ class ipex_ops:
                                                  is_causal, return_softmax,
                                                  gen_)
         else:  # XPU build
+            if max_seqlen_q is None:
+                assert seqlen_q is not None
+                max_seqlen_q = int((seqlen_q[1:] - seqlen_q[:-1]).max().item())
+            if max_seqlen_k is None:
+                assert seqlen_k is not None
+                max_seqlen_k = int((seqlen_k[1:] - seqlen_k[:-1]).max().item())
             ipex.llm.functional.varlen_attention(
                 query.contiguous(), key.contiguous(), value.contiguous(), out,
                 seqlen_q.int(), seqlen_k.int(), alibi_slopes, max_seqlen_q,
